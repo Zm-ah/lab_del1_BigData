@@ -103,20 +103,22 @@ def silver_obt():
     #   - speeds outside the realistic range of 0.5–35 km/h
     #     (nulls are kept — speed is not always recorded)
     df_clean = (
-        df_with_units
-        .filter(F.col("event_unit") != "d")
-        .filter(F.col("is_valid_combo") == True)
-        .filter(F.col("athlete_performance").isNotNull())
-        .filter(F.col("event_distance_length").isNotNull())
-        .filter(F.col("athlete_id").isNotNull())
-        .filter(~F.col("athlete_average_speed").contains(":"))
-        .filter(
-            F.regexp_replace(F.col("athlete_average_speed"), "[^0-9.]", "").cast("float").between(0.5, 35)
-            | F.col("athlete_average_speed").isNull()
-            .filter(F.col("performance_seconds").isNull() | 
-            (F.col("performance_seconds") > 0))
-        )
+    df_with_units
+    .filter(F.col("event_unit") != "d")
+    .filter(F.col("is_valid_combo") == True)
+    .filter(F.col("athlete_performance").isNotNull())
+    .filter(F.col("event_distance_length").isNotNull())
+    .filter(F.col("athlete_id").isNotNull())
+    .filter(~F.col("athlete_average_speed").contains(":"))
+    .filter(
+        F.regexp_replace(F.col("athlete_average_speed"), "[^0-9.]", "").cast("float").between(0.5, 35)
+        | F.col("athlete_average_speed").isNull()
     )
+    .filter(
+        F.col("performance_seconds").isNull() | 
+        (F.col("performance_seconds") > 0)
+    )
+)
 
     # ── STEP 4: Convert performance values ───────────────────────────────
     # For time-based events (km/mi): strip unit suffix, convert HH:MM:SS → seconds
