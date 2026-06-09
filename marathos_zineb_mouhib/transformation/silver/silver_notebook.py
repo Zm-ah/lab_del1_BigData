@@ -89,9 +89,9 @@ def silver_obt():
         .withColumn("event_unit",       get_event_unit_udf(F.col("event_distance_length")))
         .withColumn("performance_unit", get_performance_unit_udf(F.col("athlete_performance")))
         .withColumn("is_valid_combo",   is_valid_unit_combination_udf(
-                                            F.col("event_unit"),
-                                            F.col("performance_unit")
-                                        ))
+        F.col("event_unit"),
+        F.col("performance_unit") )
+        )
     )
 
     # ── STEP 3: Remove invalid rows ───────────────────────────────────────
@@ -114,10 +114,7 @@ def silver_obt():
         F.regexp_replace(F.col("athlete_average_speed"), "[^0-9.]", "").cast("float").between(0.5, 35)
         | F.col("athlete_average_speed").isNull()
     )
-    .filter(
-        F.col("performance_seconds").isNull() | 
-        (F.col("performance_seconds") > 0)
-    )
+    
 )
 
     # ── STEP 4: Convert performance values ───────────────────────────────
@@ -144,8 +141,13 @@ def silver_obt():
             ).otherwise(None)
         )
         .drop("athlete_performance_clean")
+        .filter(
+            F.col("performance_seconds").isNull() |
+            (F.col
+            ("performance_seconds") > 0)
+        )
     )
-
+    
     # ── STEP 5: Generate surrogate keys using sha2 ────────────────────────
     # sha2 produces a stable 256-bit hash ID based on column values.
     # Preferred over dense_rank() for streaming pipelines — no full table
