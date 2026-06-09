@@ -1,0 +1,33 @@
+Table fct_results {
+  result_id varchar [primary key]
+  event_id varchar [ref: > dim_event.event_id]
+  athlete_key varchar [ref: > dim_athlete.athlete_key]
+  year_id varchar [ref: > dim_time.year_id]
+  performance_seconds int
+  performance_km float
+  athlete_average_speed float
+  athlete_age_at_event int
+}
+
+Table dim_event {
+  event_id varchar [primary key]
+  event_name varchar
+  event_type varchar
+  event_distance_length varchar
+  event_number_of_finishers int
+  event_dates varchar
+}
+
+Table dim_athlete {
+  athlete_key varchar [primary key]
+  athlete_id varchar
+  athlete_country varchar
+  athlete_gender varchar
+  athlete_year_of_birth int
+  athlete_age_category varchar
+}
+
+Table dim_time {
+  year_id varchar [primary key]
+  year_of_event int
+}
