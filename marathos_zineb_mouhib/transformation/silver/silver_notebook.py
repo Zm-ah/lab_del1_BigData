@@ -113,6 +113,8 @@ def silver_obt():
         .filter(
             F.regexp_replace(F.col("athlete_average_speed"), "[^0-9.]", "").cast("float").between(0.5, 35)
             | F.col("athlete_average_speed").isNull()
+            .filter(F.col("performance_seconds").isNull() | 
+            (F.col("performance_seconds") > 0))
         )
     )
 
