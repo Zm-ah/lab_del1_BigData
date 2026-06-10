@@ -141,6 +141,29 @@ def silver_obt():
             ).otherwise(None)
         )
         .drop("athlete_performance_clean")
+    )
+    
+    df_converted = (
+        df_clean
+        .withColumn(
+            "athlete_performance_clean",
+            F.trim(F.regexp_replace(F.col("athlete_performance"), r"\s*(h|km|mi)$", ""))
+        )
+        .withColumn(
+            "performance_seconds",
+            F.when(
+                F.col("performance_unit") == "h",
+                time_to_seconds_udf(F.col("athlete_performance_clean"))
+            ).otherwise(None)
+        )
+        .withColumn(
+            "performance_km",
+            F.when(
+                F.col("performance_unit") == "km",
+                F.col("athlete_performance_clean").cast("float")
+            ).otherwise(None)
+        )
+        .drop("athlete_performance_clean")
         .filter(
             F.col("performance_seconds").isNull() |
             (F.col
@@ -173,6 +196,12 @@ def silver_obt():
                     F.col("event_number_of_finishers").cast("int"))
         .withColumn("athlete_gender",
                     F.upper(F.trim(F.col("athlete_gender"))))
+        # ── Keep only valid gender values, null out X and other garbage ──
+        .withColumn("athlete_gender",
+                    F.when(F.col("athlete_gender").isin("M", "F", "W"),
+                        F.col("athlete_gender"))
+                     .otherwise(None))
+    
         .withColumn("athlete_country",
                     F.upper(F.trim(F.col("athlete_country"))))
         .withColumn("athlete_age_at_event",
