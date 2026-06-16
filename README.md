@@ -186,3 +186,81 @@ dim_athlete ──► fct_results ◄── dim_time
 
 
 
+## Dashboard (Task 6)
+
+An interactive dashboard was built using Databricks AI/BI Dashboard 
+connected directly to the Gold layer tables.
+
+### Datasets (SQL-based)
+| Dataset | Description |
+|---------|-------------|
+| `kpi_overview` | Aggregated KPI metrics across all data |
+| `kpi_filtered` | Filterable KPI metrics by gender, event type and year |
+| `top_countries_km` | Top 15 countries by finishers in km races |
+| `top_countries_mi` | Top 15 countries by finishers in mile races |
+| `gender_distribution` | Result count by gender and event type |
+| `participation_trend` | Number of results per year |
+| `speed_by_age_gender` | Average speed per age category and gender |
+| `top10_fastest_km` | Top 10 fastest athletes in km races |
+| `speed_by_distance` | Average speed and time by event distance |
+
+### Visualizations
+- **Counter widgets** – Interactive KPI cards (unique races, total results, countries, avg speed)
+- **Bar charts** – Country rankings, gender distribution, age category analysis, fastest athletes
+- **Line/Area chart** – Participation trend over time
+
+### Interactive Filters
+Three global filters connected across all relevant datasets:
+- `event_type` – Filter by kilometers or miles
+- `athlete_gender` – Filter by M or F
+- `year_of_event` – Filter by year (1996–2023)
+
+### Data Quality Fix
+During dashboard development, a gender inconsistency was discovered in the 
+Silver layer. The raw data contained `F`, `W`, and `X` values for 
+`athlete_gender`. A cleaning step was added to Silver notebook to:
+- Keep only valid values (`M`, `F`, `W`)
+- Null out invalid values (`X` and other)
+- Pipeline was rerun to propagate fix through Silver → Gold
+
+---
+
+##  Genie Space(Task 7)
+
+A Genie Space was created to allow business stakeholders to ask 
+ad hoc questions in natural language without involving data analysts.
+
+### Connected Tables
+All Gold layer tables were linked to the Genie Space:
+- `marathos.gold.fct_results`
+- `marathos.gold.dim_athlete`
+- `marathos.gold.dim_event`
+- `marathos.gold.dim_time`
+- `marathos.gold.mart_fastest_athletes_km`
+- `marathos.gold.mart_fastest_athletes_mi`
+- `marathos.gold.mart_top_countries_km`
+- `marathos.gold.mart_top_countries_mi`
+
+### Verification
+Genie responses were manually verified in the `genie_verification` 
+notebook using SQL queries against the Gold tables.
+
+**Key finding:** When asked about the top 5 fastest athletes, Genie used 
+`MAX(speed)` while our mart table `mart_fastest_athletes_km` is based on 
+`athlete_average_speed`. This resulted in different rankings:
+- Genie: SWE athlete 394189 (28.22 km/h max speed)
+- SQL verification: NZL athlete 868574 (24.79 km/h avg speed)
+
+This finding demonstrates the importance of verifying AI-generated 
+answers against trusted data sources before sharing with stakeholders.
+
+### Technologies Used
+- Databricks AI/BI Dashboard
+- Databricks Genie Space
+- SQL (Databricks SQL dialect)
+- Delta Live Tables (DLT) – Bronze/Silver/Gold pipeline
+- Unity Catalog – `marathos` catalog
+- Delta Lake – Materialized Views
+
+
+
