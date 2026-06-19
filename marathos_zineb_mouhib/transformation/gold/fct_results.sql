@@ -13,7 +13,6 @@ SELECT
   athlete_key,
   year_id,
   performance_seconds,
-  performance_km,
   athlete_average_speed,
   athlete_age_at_event
 FROM marathos.silver.obt;
